@@ -1,9 +1,8 @@
 <?php
 class Home
 {
-    public $ada = "";
     public function index()
     {
-        var_dump("ok");
+        echo "Ini File controllers/Home.php method index";
     }
 }
