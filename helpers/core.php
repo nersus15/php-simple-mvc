@@ -3,7 +3,7 @@
 /**
  * @author Fathurrahman
  */
-class UrlParser
+class Core
 {
     private $controller = "", $method = "", $param = [], $config = [];
     function __construct()
@@ -21,9 +21,7 @@ class UrlParser
      */
     function parse_url($return = true)
     {
-        var_dump(__DIR__);die;
         $url = $this->read_url();
-        $this->config = (new josegonzalez\Dotenv\Loader('./.env'))->parse()->toArray();
         $clear_url = str_replace($this->base_url(), '', $url);
         // if(stristr($url, 'localhost')){
         // }
@@ -47,6 +45,10 @@ class UrlParser
             $this->param = $segments;
         }
         
+        $controller = $this->load_class(ucwords($this->controller), null, 'controllers', true);
+        
+        if(method_exists($controller, $this->method))
+            call_user_func_array([$controller, $this->method], $this->param);
     }
     /**
      * @param String $key - Data yang ingin diambil ['controller', 'method', 'parameter'], jika kosong akan mengembalikan semuanya dalam bentuk stdClass
@@ -61,13 +63,26 @@ class UrlParser
                 return ($key == 'controller' ? $this->controller : ($key == 'method' ? $this->method : $this->param));
     }
 
+    function get_path($path=null){
+        $root = __DIR__;
+        $isWindows = DIRECTORY_SEPARATOR != '/';
+        $root = $isWindows ? str_replace('helpers', '', $root) : str_replace('helpers', '', $root);
+
+        $path = $root . $path;
+
+        if($isWindows)
+           $path = str_replace('/', '\\', $path);
+
+        return $path;
+    }
+
     function load_class($class, $className = null, $folder = 'controllers', $return = false){
-        require_once './' . $folder . '/' . $class . '.php';
+        require $this->get_path($folder . '/' . $class . '.php');
         $classObject = null;
         if(empty($className))
-            $classObject = new $class;
+            $classObject = new $class();
         else
-            $classObject = new $className;
+            $classObject = new $className();
 
         $this->{$class} = $classObject;
 
