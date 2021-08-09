@@ -3,11 +3,15 @@
 /**
  * @author Fathurrahman
  */
+require_once './helpers/query_builder.php';
+
 class Core
 {
     private $controller = "", $method = "", $param = [], $config = [];
+    public $db;
     function __construct()
-    {
+    {   
+        $this->db = new QueryBuilder;
         $this->config = (new josegonzalez\Dotenv\Loader('./.env'))->parse()->toArray();
     }
     function read_url()
@@ -44,10 +48,10 @@ class Core
             unset($segments[0], $segments[1]);
             $this->param = $segments;
         }
-        
-        $controller = $this->load_class(ucwords($this->controller), null, 'controllers', true);
-        
-        if(method_exists($controller, $this->method))
+
+        $controller = $this->load_class('controllers/' . ucwords($this->controller), null, 'controllers', true);
+
+        if (method_exists($controller, $this->method))
             call_user_func_array([$controller, $this->method], $this->param);
     }
     /**
@@ -63,30 +67,35 @@ class Core
                 return ($key == 'controller' ? $this->controller : ($key == 'method' ? $this->method : $this->param));
     }
 
-    function get_path($path=null){
+    function get_path($path = null)
+    {
         $root = __DIR__;
         $isWindows = DIRECTORY_SEPARATOR != '/';
         $root = $isWindows ? str_replace('helpers', '', $root) : str_replace('helpers', '', $root);
 
         $path = $root . $path;
 
-        if($isWindows)
-           $path = str_replace('/', '\\', $path);
+        if ($isWindows)
+            $path = str_replace('/', '\\', $path);
 
         return $path;
     }
 
-    function load_class($class, $className = null, $folder = 'controllers', $return = false){
-        require $this->get_path($folder . '/' . $class . '.php');
+    function load_class($class, $className = null, $return = false)
+    {
+        require $this->get_path($class . '.php');
+        $segments = explode('/', $class);
+        $class = str_replace('.php', '', lastArr($segments));
+
         $classObject = null;
-        if(empty($className))
+        if (empty($className))
             $classObject = new $class();
         else
             $classObject = new $className();
 
         $this->{$class} = $classObject;
 
-        if($return)
+        if ($return)
             return $classObject;
     }
 
@@ -95,6 +104,23 @@ class Core
      */
     function base_url($uri = null)
     {
-        return empty($uri) ? $this->config['BASE_URL'] . '/' : $this->config['BASE_URL'] . $uri;
+        return empty($uri) ? $this->config['BASE_URL'] . '/' : $this->config['BASE_URL'] . '/' . $uri;
+    }
+
+    function load_view($view, $params = [])
+    {
+        $html = null;
+        try {
+
+            ob_start();
+            if (!empty($data))
+                extract($data);
+            include_once $this->get_path('views/' . $view . '.php');
+            $html = ob_get_contents();
+            ob_end_clean();
+        } catch (\Throwable $th) {
+            print_r($th);
+        }
+        echo $html;
     }
 }

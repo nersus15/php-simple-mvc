@@ -1,6 +1,5 @@
 <?php
 require_once './constant.php';
-require_once './helpers/utils.php';
 
 foreach (glob("./thirdParty/dotenv/src/josegonzalez/Dotenv/filter/*.php") as $filename)
     require_once $filename;
@@ -19,4 +18,6 @@ require_once './thirdParty/dotenv/src/josegonzalez/Dotenv/Loader.php';
 require_once './thirdParty/dotenv/src/josegonzalez/Dotenv/Expect.php';
 
 require_once './helpers/core.php';
+require_once './helpers/utils.php';
+
 require_once './helpers/query_builder.php';

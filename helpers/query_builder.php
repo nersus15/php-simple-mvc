@@ -193,7 +193,7 @@ class QueryBuilder
             $query .= $j != $bts_batch ? ', (' : null;
             $j++;
         }
-        return $this->conn->query($this->query) === TRUE ? true : false;
+        return $this->conn->query($query) === TRUE ? true : false;
     }
     function from($table)
     {
@@ -367,7 +367,6 @@ class QueryBuilder
             $this->execute();
 
         if (count($this->qeueu) == 0) {
-            $this->query .= " LIMIT 1";
             $res = $this->conn->query($this->query);
             if($res->num_rows > 0){
                 while($r = $res->fetch_assoc())
@@ -387,7 +386,6 @@ class QueryBuilder
             $this->execute();
 
         if (count($this->qeueu) == 0) {
-            $this->query .= " LIMIT 1";
             $res = $this->conn->query($this->query);
             if($res->num_rows > 0){
                 while($r = $res->fetch_object())
